@@ -18,7 +18,7 @@ function processJSONLDRequest(req, res) {
     
     let id = getNextId();
     let body = JSON.stringify(Object.assign({}, handler, { "jsonrpc": "2.0", id }));
-    console.log(body)
+
     let method = 'POST'
     let headers = {
         'Content-Type': 'application/json',

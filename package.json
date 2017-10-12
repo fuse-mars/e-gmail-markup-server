@@ -1,0 +1,33 @@
+{
+  "name": "e-gmail-markup",
+  "version": "1.0.0",
+  "description": "Handling validation and processing of Custom Gmail Actions, request are accepted only if they coming from e-gmail-markup chrome extension",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "jayson": "^2.0.4",
+    "node-fetch": "^1.7.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fuse-mars/e-gmail-markup-server.git"
+  },
+  "keywords": [
+    "gmail-actions",
+    "markup",
+    "json-ld",
+    "schema-org"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fuse-mars/e-gmail-markup-server/issues"
+  },
+  "homepage": "https://github.com/fuse-mars/e-gmail-markup-server#readme"
+}
