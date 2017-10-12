@@ -16,7 +16,6 @@ const HttpRequestMethod = {
 var gmailActions = {
     [HttpRequestMethod.GET]: function(args, callback) {
         console.log(args);
-        debugger
         callback(null, { ok: true });
     }
 }
