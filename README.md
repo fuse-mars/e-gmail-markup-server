@@ -1,2 +1,3 @@
-# e-gmail-markup-server
+# Enhanced Gmail markup
+
 Handling validation and processing of Custom Gmail Actions
