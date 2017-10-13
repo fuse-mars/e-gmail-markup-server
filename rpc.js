@@ -4,8 +4,6 @@
  * source: https://bcb.github.io/jsonrpc/node
  * 
  */
-var express = require('express');
-var bodyParser = require('body-parser');
 var jayson = require('jayson');
 
 // from Google
@@ -14,15 +12,29 @@ const HttpRequestMethod = {
 }
 
 var gmailActions = {
-    [HttpRequestMethod.GET]: function(args, callback) {
-        console.log(args);
-        callback(null, { ok: true });
-    }
+    [HttpRequestMethod.GET]: new jayson.Method({
+        handler: function(payload, done) {
+            console.log(payload);
+            // return done({
+            //     '@type': 'Thing',
+            //     url: 'https://http://localhost:3000/gmail/actions/<id>',
+            //     name: 'Action failed',
+            //     description: 'reason for failure',
+            //     // START required by jayson
+            //     message: 'Action failed',
+            //     code: 404,
+            //     // END required by jayson
+            // });
+            return done(null, {
+                '@type': 'Thing',
+                url: 'https://http://localhost:3000/gmail/actions/<id>',
+                name: 'Action succeeded',
+                description: 'more info about output of the action' 
+            });
+        },
+        collect: true // means "collect all JSON-RPC parameters in one arg"
+    })
 }
-
-var app = express();
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
 
 /**
  * @definition 
@@ -32,21 +44,36 @@ app.use(bodyParser.json());
  *    request: {
  *       headers: { 'Content-Type': 'application/ld+json'  },
  *       payload: {
-            "@context": "http://schema.org",
-            "@type": "SaveAction",
-            "name": "Ignore Person",
-            "handler": {
-                "@type": "HttpActionHandler",
-                "url": "https://www.youtube.com/watch?v=rGdKmF2UzSc",
-                "method": "HttpRequestMethod.GET"
-            }
+            "jsonrpc": "2.0",
+            "id": <string|number>,
+            "@type": "HttpActionHandler",
+            "url": "https://www.youtube.com/watch?v=rGdKmF2UzSc",
+            "method": "HttpRequestMethod.GET"
         }
  *    },
- *    response: {
- *       @TODO
+ *    response: { // success
+ *       status: 200,
+ *       payload: {
+            "@type": "Thing", // => Response/Status
+            "url": "https://<host>/gmail/actions/<id>"
+            "name": "Action succeeded",
+            "description": "more info about output of the action"
+ *       }
+ *    }
+  *   response: { // failure
+ *       status: 500,
+ *       payload: {
+            "@type": "Thing", // => Response/Status
+            "url": "https://<host>/gmail/actions/<id>"
+            "name": "Action failed",
+            "description": "reason for failure"
+ *       }
  *    }
  * }
  */
-app.post('/rpc/gmail/actions', jayson.server(gmailActions).middleware());
 
-app.listen(5000);
+
+var server = jayson.server(gmailActions);
+server.http().listen(5000, function () {
+    console.log('EGM RPC Server listening on port 5000!')
+});
