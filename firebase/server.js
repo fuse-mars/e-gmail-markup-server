@@ -5,21 +5,24 @@
  */
 var express = require('express');
 var bodyParser = require('body-parser');
-var jayson = require('jayson');
 let request = require('request')
 var { isValidAction } = require('./json-ld');
 var cors = require('cors');
 
-var client = jayson.client.http({
-	port: 5000,
-});
+const HttpRequestMethod = {
+	GET: 'HttpRequestMethod.GET',
+};
+const RF = require('./rpc')
+const { config: { HOST } } = RF;
 
 var counter = 1;
 function getNextId() {
 	return counter++;
 }
 
-function processJSONLDRequest(req, res) {
+
+
+function processJSONLDFIRERequest(req, res) {
 	// @TODO research on how to validate json-ld data
 	// make request to rcp server
 	let reqBody = req.body;
@@ -28,10 +31,15 @@ function processJSONLDRequest(req, res) {
 	let id = getNextId();
 	handler = Object.assign({}, handler, { jsonrpc: '2.0', id });
 
-	client.request(handler.method, handler, function(err, json) {
-        // console.log(err, json);
-        
-        let { result, error } = json || {}
+    let url = HOST + '/' + handler.method
+    let headers = { 'content-type': 'application/json' }
+    let body = JSON.stringify(handler)
+    
+    request.post({url, headers, body}, function(err, resp, body) {
+        let json = JSON.parse(body || '{}')
+        console.log(typeof json)
+
+        let { result, error } = json
         if(err) error = err
 
 		let handler = undefined;
@@ -41,9 +49,10 @@ function processJSONLDRequest(req, res) {
 		let response = Object.assign({}, reqBody, error ? { error } : { result, actionStatus }, { handler });
 		// console.log(error);
 		return res.status(status).send(response);
+
+
 	});
 }
-
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -91,7 +100,8 @@ app.use(bodyParser.json());
  * }
  */
 
-
+ // rpc firebase routes
+RF[HttpRequestMethod.GET](app)
 
 app.use(function validateJSONLDAction(req, res, next) {
 	let jsonld = req.body;
@@ -103,10 +113,10 @@ app.use(function validateJSONLDAction(req, res, next) {
 })
 
 let corsOptions = { origin: ['chrome-extension://gaoamhnmggdidckegbfdpeaojojfmmdo']}
-app.post('/gmail/actions', cors(corsOptions), processJSONLDRequest);
+app.post('/gmail/actions', cors(corsOptions), processJSONLDFIRERequest);
 
 
 
 app.listen(3000, function() {
-	console.log('EGM Main Server listening on port 3000!');
+	console.log(`EGM Main Server accessible on ${HOST}!`);
 });

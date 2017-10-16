@@ -1,4 +1,3 @@
 'use strict'
-const { isValidAction } = require('./isValidAction')
-
-exports.isValidAction = isValidAction;
+let jsonLd = require('../firebase/json-ld')
+module.exports = jsonLd;
