@@ -2,12 +2,12 @@
 /**
  * Handling request sent from Gmail Client by "e-gmail-markup" chrome-extension
  * source: https://bcb.github.io/jsonrpc/node
- * 
  */
 var express = require('express');
 var bodyParser = require('body-parser');
 var fetch = require('node-fetch');
 var jayson = require('jayson');
+var { isValidAction } = require('./json-ld');
 var cors = require('cors');
 
 const HttpRequestMethod = {
@@ -31,30 +31,8 @@ function processJSONLDRequest(req, res) {
 	let id = getNextId();
 	handler = Object.assign({}, handler, { jsonrpc: '2.0', id });
 
-	// let method = 'POST'
-	// let headers = {
-	//     'Content-Type': 'application/json',
-	//     'Accept': 'application/json'
-	// }
-	// fetch('http://localhost:5000/rpc/gmail/actions', {
-	//     method,
-	//     headers,
-	//     body
-	// })
-	// .then(function(out) {
-	//     return out.json();
-	// }).then(function(json) {
-	//     let { result } = json;
-	//     let handler = undefined;
-	//     let response = Object.assign({}, reqBody, { handler, result })
-	//     console.log(response);
-	//     return res.send(response);
-	// })
-	// return res.send(body);
-
-	// invoke "sumCollect" with object
 	client.request(handler.method, handler, function(err, json) {
-        console.log(err, json);
+        // console.log(err, json);
         
         let { result, error } = json
         if(err) error = err
@@ -64,7 +42,7 @@ function processJSONLDRequest(req, res) {
         let status = error? 500: 200;
 
 		let response = Object.assign({}, reqBody, error ? { error } : { result, actionStatus }, { handler });
-		console.log(error);
+		// console.log(error);
 		return res.status(status).send(response);
 	});
 }
@@ -114,6 +92,16 @@ app.use(bodyParser.json());
  *    },
  * }
  */
+
+app.use(function validateJSONLDAction(req, res, next) {
+	let jsonld = req.body;
+	return isValidAction(jsonld, function(e, isValid){
+		if(isValid) return next()
+		let message = e.message
+		return res.status(400).send({ message })
+	})
+})
+
 let corsOptions = { origin: ['chrome-extension://gaoamhnmggdidckegbfdpeaojojfmmdo']}
 app.post('/gmail/actions', cors(corsOptions), processJSONLDRequest);
 

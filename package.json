@@ -8,6 +8,8 @@
     "cors": "^2.8.4",
     "express": "^4.16.2",
     "jayson": "^2.0.4",
+    "jsonld": "^0.4.12",
+    "ld-validate": "^0.1.0",
     "node-fetch": "^1.7.3"
   },
   "devDependencies": {},
